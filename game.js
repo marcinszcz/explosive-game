@@ -86,10 +86,10 @@ function playerMove(direction) {
 
 function playerReset() {
   const pieces = 'ILJOTSZ'
-  player.matrix = createPiece(pieces.anchor[pieces.length * Math.random() | 0])
+  player.matrix = createPiece(pieces[pieces.length * Math.random() | 0])
   player.position.y = 0
   player.position.x = (arena[0].length / 2 | 0) - 
-  (player.matirx[0].length /2 | 0)
+                      (player.matrix[0].length / 2 | 0)
 }
 
 function playerRotate(direction) {
@@ -149,13 +149,10 @@ function update (time = 0) {
 const arena = createMatrix(12, 20)
 // console.log(arena)
 
-// only for tests
-// const items = ['T', 'S1', 'S2', 'O', 'I', 'L1', 'L2']
-// let item = items[Math.floor(Math.random()*items.length)]
 
 const player = {
   position: {x: 5, y: 5},
-  matrix: createPiece(item)
+  matrix: createPiece('T')
 }
 
 function createPiece(type) {
