@@ -15,10 +15,26 @@ function requestAnimationFrame (callback) {
 */
 context.scale(20, 20)
 
+function arenaDeleteRow () {
+  let rowCount = 0
+  outer : for (let y = arena.length - 1; y > 0; y--) {
+    for (let x = 0; x < arena[y].length; ++x) {
+      if (arena[y][x] === 0) {
+        continue outer
+      }
+    }
+    const row = arena.splice(y, 1)[0].fill(0)
+    arena.unshift(row)
+    ++y
+    player.score += rowCount * 10
+    rowCount *= 2
+    }
+}
+
 function collide (arena, player) {
   const [m, o] = [player.matrix, player.position]
-  for (let y = 0; y < m.length; y++) {
-    for (let x = 0; x < m[y].length; x++) {
+  for (let y = 0; y < m.length; ++y) {
+    for (let x = 0; x < m[y].length; ++x) {
       if (m[y][x] !== 0 &&
       (arena[y + o.y] &&
       arena[y + o.y][x + o.x]) !== 0) {
@@ -48,7 +64,7 @@ function drawMatrix (matrix, offset) {
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        context.fillStyle = 'red'
+        context.fillStyle = colors[value]
         context.fillRect(x + offset.x,
          y + offset.y,
          1, 1)
@@ -73,6 +89,8 @@ function playerDrop () {
     player.position.y--
     merge(arena, player)
     playerReset()
+    arenaDeleteRow()
+    updateScore()
   }
   dropCounter = 0
 }
@@ -90,6 +108,11 @@ function playerReset() {
   player.position.y = 0
   player.position.x = (arena[0].length / 2 | 0) - 
                       (player.matrix[0].length / 2 | 0)
+  if (collide(arena, player)){
+    arena.forEach(row => row.fill(0))
+    player.score = 0
+    updateScore()
+  }
 }
 
 function playerRotate(direction) {
@@ -98,7 +121,7 @@ function playerRotate(direction) {
   while (collide(arena, player)) {
       const position = player.position.x
       player.position.x += offset
-      offset = -(offset = (offset > 0 ? 1 : -1))
+      offset = - (offset = (offset > 0 ? 1 : -1))
       if (offset > player.matrix[0].length) {
         rotate(player.matrix, -direction)
         player.position.x = position
@@ -109,8 +132,8 @@ function playerRotate(direction) {
 }
 
 function rotate(matrix, direction) {
-  for (let y =0; y< matrix.length; y++){
-    for (let x = 0; x < y; x++){
+  for (let y =0; y< matrix.length; ++y){
+    for (let x = 0; x < y; ++x){
       {
         [
           matrix[x][y],
@@ -149,10 +172,25 @@ function update (time = 0) {
 const arena = createMatrix(12, 20)
 // console.log(arena)
 
+function updateScore () {
+  document.getElementById('score').innerText = player.score
+}
+
+const colors = [
+  null,
+  'red',
+  'blue',
+  'green',
+  'pink',
+  'yellow',
+  'purple',
+  'orange',
+]
 
 const player = {
-  position: {x: 5, y: 5},
-  matrix: createPiece('T')
+  position: {x: 0, y: 0},
+  matrix: null,
+  score: 0
 }
 
 function createPiece(type) {
@@ -164,39 +202,39 @@ function createPiece(type) {
 ]
   } else if (type === 'S') {
       return [
-        [1, 0, 0],
-        [1, 1, 0],
-        [0, 1, 0]
+        [7, 0, 0],
+        [7, 7, 0],
+        [0, 7, 0]
 ]
   } else if (type === 'Z') {
       return [
-        [0, 0, 1],
-        [0, 1, 1],
-        [0, 1, 0]
+        [0, 0, 2],
+        [0, 2, 2],
+        [0, 2, 0]
 ]
   } else if (type === 'O') {
       return [
-        [1, 1],
-        [1, 1],
+        [3, 3],
+        [3, 3],
         ]
   } else if (type === 'I') {
       return [
-        [0, 1, 0],
-        [0, 1, 0],
-        [0, 1, 0],
-        [0, 1, 0]
+        [0, 4, 0],
+        [0, 4, 0],
+        [0, 4, 0],
+        [0, 4, 0]
 ]
   } else if (type === 'L') {
       return [
-        [0, 1, 1],
-        [0, 1, 0],
-        [0, 1, 0]
+        [0, 5, 5],
+        [0, 5, 0],
+        [0, 5, 0]
 ]
   } else if (type === 'J') {
       return [
-        [1, 1, 0],
-        [0, 1, 0],
-        [0, 1, 0]
+        [6, 6, 0],
+        [0, 6, 0],
+        [0, 6, 0]
 ]
   }
 }
@@ -215,4 +253,6 @@ document.addEventListener('keydown', event => {
   }
 })
 
+playerReset()
+updateScore()
 update()
